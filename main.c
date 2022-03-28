@@ -1,17 +1,28 @@
+#include "elfibia.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <gelf.h>
 
-typedef struct
+void efb_get_sect_count(efb_context *efb_ctx)
 {
-    int file_desc;
-    Elf *sElf;
-    // TODO  check if works with 32-bit ELF files
-    Elf64_Ehdr *elf_header;
-    char **sect_names;
-} efb_context;
+   if (elf_getshdrnum(efb_ctx->sElf, &efb_ctx->sect_count) != 0)
+   {
+        printf("elf_getshdrnum() failed: %s", elf_errmsg(-1));
+        exit(EXIT_FAILURE);
+   }
+}
+
+void efb_get_secthdr_strtbl_idx(efb_context *efb_ctx)
+{
+    if (elf_getshdrstrndx(efb_ctx->sElf, &efb_ctx->sect_hdr_strtbl_idx) != 0)
+    {
+        printf("elf_getshdrstrndx() failed: %s", elf_errmsg(-1));
+        exit(EXIT_FAILURE);
+    }
+}
 
 void efb_init(efb_context *efb_ctx, int argc, char **argv)
 {
@@ -46,6 +57,8 @@ void efb_init(efb_context *efb_ctx, int argc, char **argv)
     }
 
     efb_ctx->sect_names = NULL;
+    efb_get_secthdr_strtbl_idx(efb_ctx);
+    efb_get_sect_count(efb_ctx);
 }
 
 void efb_close(efb_context *efb_ctx)
@@ -56,52 +69,6 @@ void efb_close(efb_context *efb_ctx)
     free(efb_ctx->sect_names);
 }
 
-char * efb_get_sect_name(efb_context *efb_ctx, Elf64_Word sect_name_offset)
-{
-    char *sect_name = NULL;
-
-    if ((sect_name = elf_strptr(efb_ctx->sElf, efb_ctx->elf_header->e_shstrndx, sect_name_offset)) == NULL)
-    {
-        printf("elf_strptr() failed: %s\n", elf_errmsg(-1));
-        exit(EXIT_FAILURE);
-    }
-
-    return sect_name;
-}
-
-void efb_get_elf_header(efb_context *efb_ctx)
-{
-    efb_ctx->elf_header = elf64_getehdr(efb_ctx->sElf);
-}
-
-void efb_get_sect_names(efb_context *efb_ctx)
-{
-    if (efb_ctx->sect_names == NULL)
-    {
-        // TODO move this initialization in efb_init?
-        efb_get_elf_header(efb_ctx);
-
-        efb_ctx->sect_names = malloc(efb_ctx->elf_header->e_shnum * sizeof(char *));
-
-        Elf_Scn *sect = NULL;
-        while ((sect = elf_nextscn(efb_ctx->sElf, sect)) != NULL)
-        {
-            GElf_Shdr sect_header;
-            if (gelf_getshdr(sect, &sect_header) != &sect_header)
-            {
-                printf("getshdr() failed: %s\n", elf_errmsg(-1));
-                exit(EXIT_FAILURE);
-            }
-
-            efb_ctx->sect_names[elf_ndxscn(sect)] = efb_get_sect_name(efb_ctx, sect_header.sh_name);
-        }
-    }
-    else
-    {
-        printf("efb_get_sect_names: already initialized\n");
-    }
-}
-
 int main(int argc, char **argv)
 {
     efb_context efb_ctx;
@@ -110,7 +77,7 @@ int main(int argc, char **argv)
 
 
     // TODO just for test
-    for (intmax_t idx = 0; idx < efb_ctx.elf_header->e_shnum; idx++)
+    for (intmax_t idx = 0; idx < efb_ctx.sect_count; idx++)
     {
         printf("Section %-4.4jd %s\n", idx, efb_ctx.sect_names[idx]);
     }
