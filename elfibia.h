@@ -14,6 +14,7 @@ typedef struct
 } efb_context;
 
 void efb_get_sect_names(efb_context *efb_ctx);
+void efb_get_sect_count(efb_context *efb_ctx);
 
 
 #endif // ELFIBIA_H_INCLUDED

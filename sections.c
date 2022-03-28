@@ -40,3 +40,12 @@ void efb_get_sect_names(efb_context *efb_ctx)
         printf("efb_get_sect_names: already initialized\n");
     }
 }
+
+void efb_get_sect_count(efb_context *efb_ctx)
+{
+   if (elf_getshdrnum(efb_ctx->sElf, &efb_ctx->sect_count) != 0)
+   {
+        printf("elf_getshdrnum() failed: %s", elf_errmsg(-1));
+        exit(EXIT_FAILURE);
+   }
+}

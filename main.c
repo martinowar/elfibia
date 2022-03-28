@@ -6,15 +6,6 @@
 #include <fcntl.h>
 #include <gelf.h>
 
-void efb_get_sect_count(efb_context *efb_ctx)
-{
-   if (elf_getshdrnum(efb_ctx->sElf, &efb_ctx->sect_count) != 0)
-   {
-        printf("elf_getshdrnum() failed: %s", elf_errmsg(-1));
-        exit(EXIT_FAILURE);
-   }
-}
-
 void efb_get_secthdr_strtbl_idx(efb_context *efb_ctx)
 {
     if (elf_getshdrstrndx(efb_ctx->sElf, &efb_ctx->sect_hdr_strtbl_idx) != 0)
