@@ -14,14 +14,20 @@
 				<Compiler>
 					<Add option="-g" />
 				</Compiler>
+				<Linker>
+					<Add library="elf" />
+				</Linker>
 			</Target>
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="elfibia.h" />
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
-			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="sections.c">
+			<Option compilerVar="CC" />
 		</Unit>
 		<Extensions />
 	</Project>
