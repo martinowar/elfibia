@@ -16,5 +16,7 @@ typedef struct
 void efb_get_sect_names(efb_context *efb_ctx);
 void efb_get_sect_count(efb_context *efb_ctx);
 
+void efb_draw_view(char **menu_strings, const int menu_items_count);
+
 
 #endif // ELFIBIA_H_INCLUDED

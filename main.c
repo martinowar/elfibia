@@ -68,11 +68,12 @@ int main(int argc, char **argv)
 
 
     // TODO just for test
-    for (intmax_t idx = 0; idx < efb_ctx.sect_count; idx++)
-    {
-        printf("Section %-4.4jd %s\n", idx, efb_ctx.sect_names[idx]);
-    }
+//    for (intmax_t idx = 0; idx < efb_ctx.sect_count; idx++)
+//    {
+//        printf("Section %-4.4jd %s\n", idx, efb_ctx.sect_names[idx]);
+//    }
 
+    efb_draw_view(efb_ctx.sect_names, efb_ctx.sect_count);
 
     efb_close(&efb_ctx);
 
