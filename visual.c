@@ -56,6 +56,19 @@ static void print_in_middle(WINDOW *win, int starty, int startx, int width, char
 
 static void init_view(efb_visual_context *visual_ctx, char **menu_strings, const int menu_items_count)
 {
+    // TODO from man initscr:
+    // Signal Handlers
+    // SIGWINCH
+    //        This  handles  the  window-size  changes  which were ignored in the standardization efforts.  The handler sets a (signal-safe) variable
+    //        which is later tested in wgetch (see curs_getch(3X)).  If keypad has been enabled for the corresponding window, wgetch returns the  key
+    //        symbol KEY_RESIZE.  At the same time, wgetch calls resizeterm to adjust the standard screen stdscr, and update other data such as LINES
+    //        and COLS.
+    struct sigaction sig_act;
+    sig_act.sa_handler = sig_handler;
+    sigemptyset(&sig_act.sa_mask);
+    sig_act.sa_flags = 0;
+    sigaction(SIGWINCH, &sig_act, NULL);
+
     visual_ctx->menu_strings = menu_strings;
     visual_ctx->menu_items_count = menu_items_count;
     initscr();
@@ -66,7 +79,8 @@ static void init_view(efb_visual_context *visual_ctx, char **menu_strings, const
     init_pair(1, COLOR_YELLOW, COLOR_BLACK);
     init_pair(2, COLOR_CYAN, COLOR_BLACK);
 
-    visual_ctx->wnd_menu = 0;
+    visual_ctx->wnd_menu = NULL;
+    visual_ctx->menu_items = NULL;
 }
 
 static void destroy_menu(efb_visual_context *visual_ctx)
@@ -81,6 +95,9 @@ static void destroy_menu(efb_visual_context *visual_ctx)
         }
 
         delwin(visual_ctx->wnd_menu);
+        free(visual_ctx->menu_items);
+        visual_ctx->wnd_menu = NULL;
+        visual_ctx->menu_items = NULL;
     }
 }
 
@@ -105,9 +122,11 @@ static void create_menu(efb_visual_context *visual_ctx, struct winsize *winsz)
     visual_ctx->main_menu = new_menu((ITEM **)visual_ctx->menu_items);
 
     visual_ctx->wnd_menu = newwin(winsz->ws_row - 5, 45, MENU_FIRST_ROW, MENU_FIRST_COLUMN);
+
     keypad(visual_ctx->wnd_menu, TRUE);
 
     set_menu_win(visual_ctx->main_menu, visual_ctx->wnd_menu);
+    // TODO check the X and Y values
     set_menu_sub(visual_ctx->main_menu, derwin(visual_ctx->wnd_menu, winsz->ws_row - 5 - 4, 38, 3, 1));
     set_menu_format(visual_ctx->main_menu, winsz->ws_row - 5 - 4, 1);
 
@@ -115,13 +134,13 @@ static void create_menu(efb_visual_context *visual_ctx, struct winsize *winsz)
 
     box(visual_ctx->wnd_menu, 0, 0);
 //    print_in_middle(visual_ctx->wnd_menu, 1, 0, 45, "Sections", COLOR_PAIR(1));
-//    mvwaddch(visual_ctx->wnd_menu, 2, 0, ACS_LTEE);
-//    mvwhline(visual_ctx->wnd_menu, 2, 1, ACS_HLINE, 43);
-//    mvwaddch(visual_ctx->wnd_menu, 2, 44, ACS_RTEE);
+    mvwaddch(visual_ctx->wnd_menu, 2, 0, ACS_LTEE);
+    mvwhline(visual_ctx->wnd_menu, 2, 1, ACS_HLINE, 43);
+    mvwaddch(visual_ctx->wnd_menu, 2, 44, ACS_RTEE);
 
     post_menu(visual_ctx->main_menu);
-    wrefresh(visual_ctx->wnd_menu);
-    refresh();
+//    wrefresh(visual_ctx->wnd_menu);
+//    refresh();
 }
 
 static void redraw_view(efb_visual_context *visual_ctx)
@@ -132,27 +151,34 @@ static void redraw_view(efb_visual_context *visual_ctx)
     destroy_menu(visual_ctx);
     create_menu(visual_ctx, &winsz);
 
+    clear();
     attron(COLOR_PAIR(2));
-    mvprintw(winsz.ws_row - 1, 0, "UP / DOWN / PageUp / PageDown / Home / End to navigate; q to exit)");
+    mvprintw(winsz.ws_row - 1, 0, "Navigation: UP / DOWN / PgUp / PgDown / Home / End; Exit: q)");
     attroff(COLOR_PAIR(2));
+
     refresh();
+    // TODO check why the menu is shown only if wrefresh() is called after refresh()
+//    wrefresh(visual_ctx->wnd_menu);
 }
 
 void efb_draw_view(char **menu_strings, const int menu_items_count)
 {
-    struct sigaction sig_act;
-    sig_act.sa_handler = sig_handler;
-    sigemptyset(&sig_act.sa_mask);
-    sig_act.sa_flags = 0;
-    sigaction(SIGWINCH, &sig_act, NULL);
-
     init_view(&efb_visual_ctx, menu_strings, menu_items_count);
-
     redraw_view(&efb_visual_ctx);
 
     int ch_key;
 
+
+
+//    wrefresh(efb_visual_ctx.wnd_menu);
+
+
+
+
+    // TODO which wnd should handle the keys?
+    // TODO check if wgetch calls wrefresh()
     while((ch_key = wgetch(efb_visual_ctx.wnd_menu)) != 'q')
+//    while((ch_key = wgetch(stdscr)) != 'q')
     {
         switch(ch_key)
         {
@@ -176,8 +202,8 @@ void efb_draw_view(char **menu_strings, const int menu_items_count)
                 break;
 		}
 
-        wrefresh(efb_visual_ctx.wnd_menu);
-        refresh();
+ //       wrefresh(efb_visual_ctx.wnd_menu);
+ //       refresh();
 	}
 
 	destroy_menu(&efb_visual_ctx);
