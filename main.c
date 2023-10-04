@@ -6,7 +6,9 @@
 #include <fcntl.h>
 #include <gelf.h>
 
-void efb_get_secthdr_strtbl_idx(efb_context *efb_ctx)
+efb_context efb_ctx;
+
+static void efb_get_secthdr_strtbl_idx(efb_context *efb_ctx)
 {
     if (elf_getshdrstrndx(efb_ctx->sElf, &efb_ctx->sect_hdr_strtbl_idx) != 0)
     {
@@ -15,7 +17,7 @@ void efb_get_secthdr_strtbl_idx(efb_context *efb_ctx)
     }
 }
 
-void efb_init(efb_context *efb_ctx, int argc, char **argv)
+static void efb_init(efb_context *efb_ctx, int argc, char **argv)
 {
     if (argc != 2)
     {
@@ -52,7 +54,12 @@ void efb_init(efb_context *efb_ctx, int argc, char **argv)
     efb_get_sect_count(efb_ctx);
 }
 
-void efb_close(efb_context *efb_ctx)
+char * get_menu_item_content(const int menu_item_idx)
+{
+    return efb_ctx.sect_names[menu_item_idx];
+}
+
+static void efb_close(efb_context *efb_ctx)
 {
     elf_end(efb_ctx->sElf);
     close(efb_ctx->file_desc);
@@ -62,7 +69,6 @@ void efb_close(efb_context *efb_ctx)
 
 int main(int argc, char **argv)
 {
-    efb_context efb_ctx;
     efb_init(&efb_ctx, argc, argv);
     efb_get_sect_names(&efb_ctx);
 
