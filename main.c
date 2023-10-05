@@ -56,7 +56,7 @@ static void efb_init(efb_context *efb_ctx, int argc, char **argv)
 
 char * get_menu_item_content(const int menu_item_idx)
 {
-    return efb_ctx.sect_names[menu_item_idx];
+    return get_section_content(&efb_ctx, menu_item_idx);
 }
 
 static void efb_close(efb_context *efb_ctx)

@@ -141,7 +141,7 @@ static void print_menu_item_content(efb_visual_context *visual_ctx, const int it
 
 static void create_content_view(efb_visual_context *visual_ctx)
 {
-    visual_ctx->wnd_content = newwin(LINES - 5, 45, CONTENT_FIRST_ROW, CONTENT_FIRST_COLUMN);
+    visual_ctx->wnd_content = newwin(LINES - 5, 80, CONTENT_FIRST_ROW, CONTENT_FIRST_COLUMN);
 
     box(visual_ctx->wnd_content, 0, 0);
 
