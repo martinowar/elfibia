@@ -213,7 +213,7 @@ static void redraw_view(efb_visual_context *visual_ctx)
 
     clear();
     attron(COLOR_PAIR(2));
-    mvprintw(LINES - 1, 0, "Navigation: UP / DOWN / PgUp / PgDown / Home / End; Exit: q)");
+    mvprintw(LINES - 1, 0, "Navigation: Menu: UP / DOWN / PgUp / PgDown / Home / End; Content: j: UP, k: DOWN; Exit: q");
     attroff(COLOR_PAIR(2));
 
     refresh();
