@@ -11,11 +11,14 @@
 				<Option object_output="/data/work/elfibia/.objs" />
 				<Option type="1" />
 				<Option compiler="gcc" />
+				<Option parameters="testapp" />
 				<Compiler>
 					<Add option="-g" />
 				</Compiler>
 				<Linker>
 					<Add library="elf" />
+					<Add library="ncurses" />
+					<Add library="menu" />
 				</Linker>
 			</Target>
 		</Build>
@@ -27,6 +30,9 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="sections.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="visual.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Extensions />
