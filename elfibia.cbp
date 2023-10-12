@@ -25,11 +25,14 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
-		<Unit filename="elfibia.h" />
-		<Unit filename="main.c">
+		<Unit filename="elfheader.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="sections.c">
+		<Unit filename="elfibia.h" />
+		<Unit filename="elfsections.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="visual.c">

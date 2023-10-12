@@ -10,11 +10,7 @@
 #define DUMP_COL_WIDTH 4
 #define BUF_HEX_SIZE   (2 * DUMP_ROW_WIDTH + DUMP_COL_WIDTH + 1)
 
-// TODO Use a dynamic buffer
-#define CONTENT_BUF_SIZE 5000000
-static char content_buf[CONTENT_BUF_SIZE];
-
-static void print_secthdr_struct(GElf_Shdr *elfShdr, char * out_buffer)
+static void get_secthdr_struct(GElf_Shdr *elfShdr, char * out_buffer)
 {
     sprintf(&out_buffer[strlen(out_buffer)],
         "sh_addr      = %lx\n"
@@ -32,7 +28,7 @@ static void print_secthdr_struct(GElf_Shdr *elfShdr, char * out_buffer)
         elfShdr->sh_name, elfShdr->sh_offset, elfShdr->sh_size, elfShdr->sh_type);
 }
 
-static void print_elf_data_struct(Elf_Data *elf_data, char * out_buffer)
+static void get_elf_data_struct(Elf_Data *elf_data, char * out_buffer)
 {
     sprintf(&out_buffer[strlen(out_buffer)],
         "d_buf     = %p\n"
@@ -174,7 +170,7 @@ void info_sect_dynamic(Elf *sElf, Elf_Scn * sect, GElf_Shdr *sect_header, const 
 {
     if (sect_header->sh_type == SHT_DYNAMIC)
     {
-        print_secthdr_struct(sect_header, out_buffer);
+        get_secthdr_struct(sect_header, out_buffer);
 
         Elf_Data *elf_data = NULL;
         if ((elf_data = elf_getdata(sect, elf_data)) == NULL)
@@ -203,7 +199,7 @@ void info_sect_dynamic(Elf *sElf, Elf_Scn * sect, GElf_Shdr *sect_header, const 
 
         putchar('\n');
 
-        print_elf_data_struct(elf_data, out_buffer);
+        get_elf_data_struct(elf_data, out_buffer);
 
         if (dump_data == true)
         {
@@ -216,7 +212,7 @@ static void info_sect_strtab(Elf_Scn * elf_sect, GElf_Shdr *sect_header, const b
 {
     if (sect_header->sh_type == SHT_STRTAB)
     {
-        print_secthdr_struct(sect_header, out_buffer);
+        get_secthdr_struct(sect_header, out_buffer);
 
         Elf_Data *elf_data = NULL;
         if ((elf_data = elf_getdata(elf_sect, elf_data)) == NULL)
@@ -224,7 +220,7 @@ static void info_sect_strtab(Elf_Scn * elf_sect, GElf_Shdr *sect_header, const b
             errx(EXIT_FAILURE, "elf_getdata() failed: %s.", elf_errmsg(-1));
         }
 
-        print_elf_data_struct(elf_data, out_buffer);
+        get_elf_data_struct(elf_data, out_buffer);
         dump_sect_strings(elf_data, sect_header->sh_addr, out_buffer);
 
         if (dump_data == true)
@@ -281,12 +277,10 @@ void efb_get_sect_count(efb_context *efb_ctx)
    }
 }
 
-char * get_section_content(efb_context *efb_ctx, const int section_idx)
+void efb_get_section_content(efb_context *efb_ctx, const int section_idx, char * out_buffer)
 {
     char * section_name = NULL;
     Elf_Scn *sect = NULL;
-
-    memset(content_buf, 0, CONTENT_BUF_SIZE);
 
     while ((sect = elf_nextscn(efb_ctx->sElf, sect)) != NULL)
     {
@@ -299,17 +293,17 @@ char * get_section_content(efb_context *efb_ctx, const int section_idx)
         if (elf_ndxscn(sect) == section_idx)
         {
             section_name = efb_ctx->sect_names[section_idx];
-            sprintf(content_buf, "Section %-4.4jd %s\n", (uintmax_t)elf_ndxscn(sect), section_name);
+            sprintf(out_buffer, "Section %-4.4jd %s\n", (uintmax_t)elf_ndxscn(sect), section_name);
             switch (sect_header.sh_type)
             {
             case SHT_DYNAMIC:
-                info_sect_dynamic(efb_ctx->sElf, sect, &sect_header, true, section_name, content_buf);
+                info_sect_dynamic(efb_ctx->sElf, sect, &sect_header, true, section_name, out_buffer);
                 break;
             case SHT_STRTAB:
-                info_sect_strtab(sect, &sect_header, true, section_name, content_buf);
+                info_sect_strtab(sect, &sect_header, true, section_name, out_buffer);
                 break;
             default:
-                print_secthdr_struct(&sect_header, content_buf);
+                get_secthdr_struct(&sect_header, out_buffer);
 
                 Elf_Data *elf_data = NULL;
                 if ((elf_data = elf_getdata(sect, elf_data)) == NULL)
@@ -317,13 +311,11 @@ char * get_section_content(efb_context *efb_ctx, const int section_idx)
                     errx(EXIT_FAILURE, "elf_getdata() failed: %s.", elf_errmsg(-1));
                 }
 
-                print_elf_data_struct(elf_data, content_buf);
+                get_elf_data_struct(elf_data, out_buffer);
 
-                dump_sect_data(elf_data, sect_header.sh_addr, content_buf);
+                dump_sect_data(elf_data, sect_header.sh_addr, out_buffer);
                 break;
             }
         }
     }
-
-    return content_buf[0] ? content_buf : "(empty)";
 }

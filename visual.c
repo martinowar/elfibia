@@ -11,6 +11,8 @@
 #define MENU_FIRST_ROW 1
 #define MENU_FIRST_COLUMN 1
 
+#define FIRST_MENU_INDEX 0
+
 #define CONTENT_FIRST_ROW 1
 #define CONTENT_FIRST_COLUMN (MENU_WIDTH + 3)
 #define CONTENT_HEIGHT (LINES - 3)
@@ -62,6 +64,7 @@ static void init_view(efb_visual_context *visual_ctx, char **menu_strings, const
     cbreak();
     noecho();
     keypad(stdscr, TRUE);
+    mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, NULL);
 
     start_color();
     init_pair(1, COLOR_YELLOW, COLOR_BLUE);
@@ -112,8 +115,6 @@ static void create_menu(efb_visual_context *visual_ctx)
 
     visual_ctx->wnd_menu = newwin(LINES - 5, MENU_WIDTH, MENU_FIRST_ROW, MENU_FIRST_COLUMN);
 
-    keypad(visual_ctx->wnd_menu, TRUE);
-
     set_menu_win(visual_ctx->main_menu, visual_ctx->wnd_menu);
 
     // TODO check if the X and Y values are correct
@@ -152,7 +153,7 @@ static void redraw_content_view(efb_visual_context *visual_ctx)
 
 static void display_menu_item_content(efb_visual_context *visual_ctx, const int item_idx)
 {
-    char *pContent = get_menu_item_content(item_idx);
+    char *pContent = efb_get_menu_item_content(item_idx);
     char *pTmpContent = pContent;
 
     visual_ctx->content_row_count = 0;
@@ -217,35 +218,39 @@ static void redraw_view(efb_visual_context *visual_ctx)
     attroff(COLOR_PAIR(2));
 
     refresh();
-    // TODO check why the menu is shown only if wrefresh() is called after refresh()
     wrefresh(visual_ctx->wnd_menu);
 
     redraw_content_view(visual_ctx);
+}
+
+static void process_key_press(efb_visual_context *visual_ctx, const int pressed_key)
+{
+    menu_driver(visual_ctx->main_menu, pressed_key);
+    display_menu_item_content(visual_ctx, item_index(current_item(visual_ctx->main_menu)));
+    wrefresh(visual_ctx->wnd_menu);
 }
 
 void efb_draw_view(char **menu_strings, const int menu_items_count)
 {
     efb_visual_context efb_visual_ctx;
     init_view(&efb_visual_ctx, menu_strings, menu_items_count);
+    display_menu_item_content(&efb_visual_ctx, FIRST_MENU_INDEX);
     redraw_view(&efb_visual_ctx);
 
     int ch_key;
 
-    // TODO which wnd should handle the keys?
-    // TODO check if wgetch calls wrefresh()
-//    while((ch_key = wgetch(efb_visual_ctx.wnd_menu)) != 'q')
     while((ch_key = wgetch(stdscr)) != 'q')
     {
         switch(ch_key)
         {
-            case 'j': // scroll up the content
+            case 'j': // scroll the menu item content
                 if (efb_visual_ctx.content_top_row > 0)
                 {
                     efb_visual_ctx.content_top_row--;
                 }
                 redraw_content_view(&efb_visual_ctx);
                 break;
-            case 'k':
+            case 'k': // scroll the menu item content
                 if (efb_visual_ctx.content_top_row < (efb_visual_ctx.content_row_count - LINES + STATUS_LINE_HEIGHT + 1))
                 {
                     efb_visual_ctx.content_top_row++;
@@ -253,35 +258,28 @@ void efb_draw_view(char **menu_strings, const int menu_items_count)
                 redraw_content_view(&efb_visual_ctx);
                 break;
             case KEY_DOWN:
-                menu_driver(efb_visual_ctx.main_menu, REQ_DOWN_ITEM);
-                display_menu_item_content(&efb_visual_ctx, item_index(current_item(efb_visual_ctx.main_menu)));
+                process_key_press(&efb_visual_ctx, REQ_DOWN_ITEM);
                 break;
             case KEY_UP:
-                menu_driver(efb_visual_ctx.main_menu, REQ_UP_ITEM);
-                display_menu_item_content(&efb_visual_ctx, item_index(current_item(efb_visual_ctx.main_menu)));
+                process_key_press(&efb_visual_ctx, REQ_UP_ITEM);
                 break;
             case KEY_NPAGE:
-                menu_driver(efb_visual_ctx.main_menu, REQ_SCR_DPAGE);
-                display_menu_item_content(&efb_visual_ctx, item_index(current_item(efb_visual_ctx.main_menu)));
+                process_key_press(&efb_visual_ctx, REQ_SCR_DPAGE);
                 break;
             case KEY_PPAGE:
-                menu_driver(efb_visual_ctx.main_menu, REQ_SCR_UPAGE);
-                display_menu_item_content(&efb_visual_ctx, item_index(current_item(efb_visual_ctx.main_menu)));
+                process_key_press(&efb_visual_ctx, REQ_SCR_UPAGE);
                 break;
             case KEY_HOME:
-                menu_driver(efb_visual_ctx.main_menu, REQ_FIRST_ITEM);
-                display_menu_item_content(&efb_visual_ctx, item_index(current_item(efb_visual_ctx.main_menu)));
+                process_key_press(&efb_visual_ctx, REQ_FIRST_ITEM);
                 break;
             case KEY_END:
-                menu_driver(efb_visual_ctx.main_menu, REQ_LAST_ITEM);
-                display_menu_item_content(&efb_visual_ctx, item_index(current_item(efb_visual_ctx.main_menu)));
+                process_key_press(&efb_visual_ctx, REQ_LAST_ITEM);
                 break;
             case KEY_RESIZE:
                 redraw_view(&efb_visual_ctx);
                 break;
 		}
 
-        wrefresh(efb_visual_ctx.wnd_menu);
         refresh();
 	}
 

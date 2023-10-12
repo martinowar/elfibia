@@ -6,6 +6,10 @@
 #include <fcntl.h>
 #include <gelf.h>
 
+// TODO Use a dynamic buffer
+#define CONTENT_BUF_SIZE 5000000
+static char content_buf[CONTENT_BUF_SIZE];
+
 efb_context efb_ctx;
 
 static void efb_get_secthdr_strtbl_idx(efb_context *efb_ctx)
@@ -54,17 +58,35 @@ static void efb_init(efb_context *efb_ctx, int argc, char **argv)
     efb_get_sect_count(efb_ctx);
 }
 
-char * get_menu_item_content(const int menu_item_idx)
+char * efb_get_menu_item_content(const int menu_item_idx)
 {
-    return get_section_content(&efb_ctx, menu_item_idx);
+    content_buf[0] = '\0';
+
+    if (menu_item_idx == 0)
+    {
+        efb_get_elf_header(&efb_ctx, content_buf);
+    }
+    else
+    {
+        efb_get_section_content(&efb_ctx, menu_item_idx, content_buf);
+    }
+
+    return content_buf;
 }
 
 static void efb_close(efb_context *efb_ctx)
 {
-    elf_end(efb_ctx->sElf);
+    if (efb_ctx->sElf != NULL)
+    {
+        elf_end(efb_ctx->sElf);
+    }
+
     close(efb_ctx->file_desc);
 
-    free(efb_ctx->sect_names);
+    if (efb_ctx->sect_names != NULL)
+    {
+        free(efb_ctx->sect_names);
+    }
 }
 
 int main(int argc, char **argv)
