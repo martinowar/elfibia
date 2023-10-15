@@ -29,10 +29,6 @@ typedef struct
     WINDOW *wnd_content;
 } efb_visual_context;
 
-static void destroy_menu(efb_visual_context *visual_ctx);
-static void create_menu(efb_visual_context *visual_ctx);
-static void redraw_view(efb_visual_context *visual_ctx);
-
 static void print_in_middle(WINDOW *win, int starty, int startx, int width, char *string, chtype color)
 {	int length, x, y;
 	float temp;
@@ -64,11 +60,11 @@ static void init_view(efb_visual_context *visual_ctx, char **menu_strings, const
     cbreak();
     noecho();
     keypad(stdscr, TRUE);
-    mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, NULL);
+//    mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, NULL);
 
     start_color();
-    init_pair(1, COLOR_YELLOW, COLOR_BLUE);
-    init_pair(2, COLOR_CYAN, COLOR_RED);
+    init_pair(1, COLOR_YELLOW, COLOR_MAGENTA);
+    init_pair(2, COLOR_WHITE, COLOR_RED);
 
     visual_ctx->wnd_menu = NULL;
     visual_ctx->menu_items = NULL;
