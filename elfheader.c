@@ -71,6 +71,7 @@ static char * get_elf_ssabi(unsigned int elf_osabi)
         break;
     default:
         sprintf(custom_buf, "Not set in elfibia (%d)", elf_osabi);
+        return custom_buf;
         break;
     }
 }

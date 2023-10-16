@@ -1,8 +1,7 @@
-.objs/
+obj_dir/
 testapp
 *~
 test
 elfibia
 elfibia.layout
 elfibia.depend
-notes.txt

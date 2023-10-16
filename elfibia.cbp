@@ -8,7 +8,7 @@
 		<Build>
 			<Target title="debug">
 				<Option output="elfibia" prefix_auto="1" extension_auto="1" />
-				<Option object_output="/data/work/elfibia/.objs" />
+				<Option object_output="/data/work/elfibia/obj" />
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Option parameters="testapp" />
@@ -28,11 +28,11 @@
 		<Unit filename="elfheader.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="elfibia.h" />
-		<Unit filename="elfsections.c">
+		<Unit filename="elfibia.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="main.c">
+		<Unit filename="elfibia.h" />
+		<Unit filename="elfsections.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="visual.c">
