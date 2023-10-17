@@ -8,7 +8,7 @@
 		<Build>
 			<Target title="debug">
 				<Option output="elfibia" prefix_auto="1" extension_auto="1" />
-				<Option object_output="/data/work/elfibia/obj" />
+				<Option object_output="obj_dir" />
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Option parameters="testapp" />
