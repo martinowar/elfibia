@@ -5,11 +5,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define STATUS_LINE_HEIGHT 3
+#define STATUS_LINE_HEIGHT 1
 
 #define MENU_WIDTH 45
-#define MENU_FIRST_ROW 1
-#define MENU_FIRST_COLUMN 1
+#define MENU_FIRST_ROW 0
+#define MENU_FIRST_COLUMN 0
 
 #define FIRST_MENU_INDEX 0
 
@@ -26,31 +26,9 @@ typedef struct
     WINDOW *wnd_menu;
     ITEM **menu_items;
     MENU *main_menu;
+    WINDOW *wnd_content_box;
     WINDOW *wnd_content;
 } efb_visual_context;
-
-static void print_in_middle(WINDOW *win, int starty, int startx, int width, char *string, chtype color)
-{	int length, x, y;
-	float temp;
-
-	if(win == NULL)
-		win = stdscr;
-	getyx(win, y, x);
-	if(startx != 0)
-		x = startx;
-	if(starty != 0)
-		y = starty;
-	if(width == 0)
-		width = 80;
-
-	length = strlen(string);
-	temp = (width - length) / 2;
-	x = startx + (int)temp;
-	wattron(win, color);
-	mvwprintw(win, y, x, "%s", string);
-	wattroff(win, color);
-	refresh();
-}
 
 static void init_view(efb_visual_context *visual_ctx, char **menu_strings, const int menu_items_count)
 {
@@ -68,6 +46,7 @@ static void init_view(efb_visual_context *visual_ctx, char **menu_strings, const
 
     visual_ctx->wnd_menu = NULL;
     visual_ctx->menu_items = NULL;
+    visual_ctx->wnd_content_box = NULL;
     visual_ctx->wnd_content = NULL;
 }
 
@@ -106,65 +85,62 @@ static void create_menu(efb_visual_context *visual_ctx)
     }
 
     visual_ctx->menu_items[idx] = new_item(NULL, NULL);
-
     visual_ctx->main_menu = new_menu((ITEM **)visual_ctx->menu_items);
-
-    visual_ctx->wnd_menu = newwin(LINES - 5, MENU_WIDTH, MENU_FIRST_ROW, MENU_FIRST_COLUMN);
-
+    visual_ctx->wnd_menu = newwin(LINES - STATUS_LINE_HEIGHT, MENU_WIDTH, MENU_FIRST_ROW, MENU_FIRST_COLUMN);
     set_menu_win(visual_ctx->main_menu, visual_ctx->wnd_menu);
 
-    // TODO check if the X and Y values are correct
     // TODO Do not use magic numbers
-    set_menu_sub(visual_ctx->main_menu, derwin(visual_ctx->wnd_menu, LINES - 5 - 4, 38, 3, 1));
-    set_menu_format(visual_ctx->main_menu, LINES - 5 - 4, 1);
-
+    set_menu_sub(visual_ctx->main_menu, derwin(visual_ctx->wnd_menu, LINES - STATUS_LINE_HEIGHT - 1, 38, MENU_FIRST_ROW + 1, MENU_FIRST_COLUMN + 1));
+    set_menu_format(visual_ctx->main_menu, LINES - STATUS_LINE_HEIGHT - 1, 1);
     set_menu_mark(visual_ctx->main_menu, " > ");
-
     box(visual_ctx->wnd_menu, 0, 0);
-    print_in_middle(visual_ctx->wnd_menu, 1, 0, MENU_WIDTH, "Sections", COLOR_PAIR(2));
-    mvwaddch(visual_ctx->wnd_menu, 2, 0, ACS_LTEE);
-    mvwhline(visual_ctx->wnd_menu, 2, 1, ACS_HLINE, 43);
-    mvwaddch(visual_ctx->wnd_menu, 2, 44, ACS_RTEE);
-
     post_menu(visual_ctx->main_menu);
-    // TODO: check why the menu is not drawn if the next lines are uncommented
-//    wrefresh(visual_ctx->wnd_menu);
-//    refresh();
 }
 
 static void redraw_content_view(efb_visual_context *visual_ctx)
 {
+    if (visual_ctx->wnd_content_box != NULL)
+    {
+        wclear(visual_ctx->wnd_content_box);
+        wrefresh(visual_ctx->wnd_content_box);
+        delwin(visual_ctx->wnd_content_box);
+    }
+
+    visual_ctx->wnd_content_box = newwin(LINES - STATUS_LINE_HEIGHT, COLS - MENU_WIDTH - 3, MENU_FIRST_ROW, CONTENT_FIRST_COLUMN);
+    box(visual_ctx->wnd_content_box, 0, 0);
+    wrefresh(visual_ctx->wnd_content_box);
+
     if (visual_ctx->wnd_content != NULL)
     {
         static int counter = 0;
         wattrset(visual_ctx->wnd_content, COLOR_PAIR(1));
-// TODO remove this line
+// TODO remove this debug line
         mvprintw(0, COLS - 40, "(%d) key: %d line %d/%d", counter++, 1, visual_ctx->content_top_row, visual_ctx->content_row_count);
 
         wnoutrefresh(stdscr);
-        pnoutrefresh(visual_ctx->wnd_content, visual_ctx->content_top_row, 0, CONTENT_FIRST_ROW, CONTENT_FIRST_COLUMN, LINES - STATUS_LINE_HEIGHT - 1, COLS - 1);
+        pnoutrefresh(visual_ctx->wnd_content, visual_ctx->content_top_row, 0, CONTENT_FIRST_ROW, CONTENT_FIRST_COLUMN + 1, LINES - STATUS_LINE_HEIGHT - 2, COLS - 2);
         doupdate();
     }
 }
 
 static void display_menu_item_content(efb_visual_context *visual_ctx, const int item_idx)
 {
-    char *pContent = efb_get_menu_item_content(item_idx);
-    char *pTmpContent = pContent;
+    char *ptr_content = efb_get_menu_item_content(item_idx);
+    char *ptr_tmp_content = ptr_content;
 
     visual_ctx->content_row_count = 0;
 
-    while (*pTmpContent != '\0')
+    while (*ptr_tmp_content != '\0')
     {
-        while ((*pTmpContent != '\n') && (*pTmpContent != '\0'))
+        while ((*ptr_tmp_content != '\n') && (*ptr_tmp_content != '\0'))
         {
-            pTmpContent++;
+            ptr_tmp_content++;
         }
 
-        if (*pTmpContent == '\n')
+        if (*ptr_tmp_content == '\n')
         {
             visual_ctx->content_row_count++;
-            pTmpContent++;
+            ptr_tmp_content++;
         }
     }
 
@@ -180,23 +156,23 @@ static void display_menu_item_content(efb_visual_context *visual_ctx, const int 
 
     visual_ctx->wnd_content = newpad(visual_ctx->content_row_count, COLS - MENU_WIDTH);
     wattrset(visual_ctx->wnd_content, COLOR_PAIR(1));
-    wbkgd(visual_ctx->wnd_content, (chtype) (' ' | COLOR_PAIR(1)));
+    wbkgd(visual_ctx->wnd_content, (chtype) (' ' | COLOR_PAIR(2)));
 
     int row_idx = 0;
-    while (*pContent != '\0')
+    while (*ptr_content != '\0')
     {
         wmove(visual_ctx->wnd_content, row_idx, 0);
 
-        while ((*pContent != '\n') && (*pContent != '\0'))
+        while ((*ptr_content != '\n') && (*ptr_content != '\0'))
         {
-            waddch(visual_ctx->wnd_content, *pContent & 0xff);
-            pContent++;
+            waddch(visual_ctx->wnd_content, *ptr_content & 0xff);
+            ptr_content++;
         }
 
-        if (*pContent == '\n')
+        if (*ptr_content == '\n')
         {
             row_idx++;
-            pContent++;
+            ptr_content++;
         }
     }
 
@@ -272,6 +248,7 @@ void efb_draw_view(char **menu_strings, const int menu_items_count)
                 process_key_press(&efb_visual_ctx, REQ_LAST_ITEM);
                 break;
             case KEY_RESIZE:
+                // TODO Should I keep the current menu element selected?
                 redraw_view(&efb_visual_ctx);
                 break;
 		}

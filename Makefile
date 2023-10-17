@@ -1,7 +1,7 @@
 CC=gcc
 IDIR=.
 OBJ_DIR=obj_dir
-CFLAGS += -Wall
+CFLAGS += -Wall -Werror
 
 LIBS=-lncurses -lmenu -lelf
 _DEPS = elfibia.h
