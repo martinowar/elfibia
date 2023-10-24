@@ -4,7 +4,7 @@
 #include <string.h>
 
 #define CUSTOM_BUFFER_SIZE 50
-char custom_buf[CUSTOM_BUFFER_SIZE];
+static char custom_buf[CUSTOM_BUFFER_SIZE];
 
 static char * get_elf_data(const int elf_data)
 {
@@ -38,41 +38,29 @@ static char * get_elf_ssabi(unsigned int elf_osabi)
     {
     case ELFOSABI_NONE:
         return "UNIX - System V";
-        break;
     case ELFOSABI_HPUX:
         return "UNIX - HP-UX";
-        break;
     case ELFOSABI_NETBSD:
         return "UNIX - NetBSD";
-        break;
     case ELFOSABI_GNU:
         return "UNIX - GNU";
-        break;
     case ELFOSABI_SOLARIS:
         return "UNIX - Solaris";
-        break;
     case ELFOSABI_AIX:
         return "UNIX - AIX";
-        break;
     case ELFOSABI_IRIX:
         return "UNIX - IRIX";
-        break;
     case ELFOSABI_FREEBSD:
         return "UNIX - FreeBSD";
-        break;
     case ELFOSABI_TRU64:
         return "UNIX - TRU64";
-        break;
     case ELFOSABI_MODESTO:
         return "Novell - Modesto";
-        break;
     case ELFOSABI_OPENBSD:
         return "UNIX - OpenBSD";
-        break;
     default:
         sprintf(custom_buf, "Not set in elfibia (%d)", elf_osabi);
         return custom_buf;
-        break;
     }
 }
 
@@ -82,23 +70,17 @@ static char * get_elf_type(const int elf_type)
     {
     case ET_NONE:
         return "NONE (None)";
-        break;
     case ET_REL:
         return "REL (Relocatable file)";
-        break;
     case ET_EXEC:
         return "EXEC (Executable file)";
-        break;
     case ET_DYN:
         return "DYN (TODO: return the correct DYN type - PIE or SO)";
-        break;
 // TODO get the correct DYN type (as it is done by the readelf app)
 //    case ET_DYN:
 //        return "DYN (Position-Independent Executable file)";
-//        break;
 //    case ET_DYN:
 //        return "DYN (Shared object file)";
-//        break;
     case ET_CORE:
         return "CORE (Core file)";
         break;
@@ -117,7 +99,6 @@ static char * get_elf_type(const int elf_type)
         }
 
         return custom_buf;
-        break;
     }
 }
 
@@ -127,32 +108,23 @@ static char * get_machine(const int machine)
     {
     case EM_NONE:
         return "No machine";
-        break;
     case EM_386:
         return "Intel 80386";
-        break;
     case EM_PPC64:
         return "PowerPC64";
-        break;
     case EM_S390:
         return "IBM S/390";
-        break;
     case EM_ARM:
         return "ARM";
-        break;
     case EM_X86_64:
         return "Advanced Micro Devices X86-64";
-        break;
     case EM_AARCH64:
         return "AArch64";
-        break;
     case EM_RISCV:
         return "RISC-V";
-        break;
     default:
         sprintf(custom_buf, "Not set in elfibia (%d)", machine);
         return custom_buf;
-        break;
     }
 }
 

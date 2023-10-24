@@ -35,6 +35,9 @@
 		<Unit filename="elfsections.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="elfsegments.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="visual.c">
 			<Option compilerVar="CC" />
 		</Unit>

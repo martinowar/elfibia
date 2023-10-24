@@ -64,7 +64,8 @@ char * efb_get_menu_item_content(const int menu_item_idx)
 
     if (menu_item_idx == 0)
     {
-        efb_get_elf_header(&efb_ctx, content_buf);
+//        efb_get_elf_header(&efb_ctx, content_buf);
+        efb_get_segment_content(&efb_ctx, content_buf);
     }
     else
     {

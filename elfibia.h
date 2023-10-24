@@ -24,4 +24,6 @@ void efb_get_section_content(efb_context *efb_ctx, const int section_idx, char *
 
 void efb_get_elf_header(efb_context const * const efb_ctx, char * out_buffer);
 
+void efb_get_segment_content(efb_context *efb_ctx, char * out_buffer);
+
 #endif // ELFIBIA_H_INCLUDED
