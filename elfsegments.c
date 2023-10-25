@@ -52,12 +52,12 @@ static char * get_seg_type(size_t seg_type)
     }
 }
 
-void efb_get_segment_content(efb_context *efb_ctx, char * out_buffer)
+void efb_get_segment_content(Elf *sElf, char * out_buffer)
 {
     size_t seg_count;
     GElf_Phdr prg_hdr;
 
-    if (elf_getphdrnum(efb_ctx->sElf, &seg_count) != 0)
+    if (elf_getphdrnum(sElf, &seg_count) != 0)
     {
         printf("elf_getphdrnum() failed: %s.\n", elf_errmsg(-1));
         exit(EXIT_FAILURE);
@@ -65,7 +65,7 @@ void efb_get_segment_content(efb_context *efb_ctx, char * out_buffer)
 
     for (int idx = 0; idx < seg_count; idx++)
     {
-        if (gelf_getphdr(efb_ctx->sElf, idx, &prg_hdr) != &prg_hdr)
+        if (gelf_getphdr(sElf, idx, &prg_hdr) != &prg_hdr)
         {
             printf("getphdr() failed: %s.\n", elf_errmsg(-1));
             exit(EXIT_FAILURE);

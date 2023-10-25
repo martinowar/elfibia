@@ -128,13 +128,13 @@ static char * get_machine(const int machine)
     }
 }
 
-void efb_get_elf_header(efb_context const * const efb_ctx, char * out_buffer)
+void efb_get_elf_header(Elf * sElf, char * out_buffer)
 {
     int elf_class;
     char * elf_ident;
     GElf_Ehdr elf_hdr;
 
-    if (gelf_getehdr(efb_ctx->sElf, &elf_hdr) == NULL)
+    if (gelf_getehdr(sElf, &elf_hdr) == NULL)
     {
         printf("gelf_getehdr() failed: %s.\n", elf_errmsg(-1));
         exit(EXIT_FAILURE);
@@ -142,7 +142,7 @@ void efb_get_elf_header(efb_context const * const efb_ctx, char * out_buffer)
 
     sprintf(&out_buffer[strlen(out_buffer)], "ELF Header:\n");
 
-    if ((elf_ident = elf_getident(efb_ctx->sElf, NULL)) == NULL)
+    if ((elf_ident = elf_getident(sElf, NULL)) == NULL)
     {
         printf("elf_getident() failed: %s.\n", elf_errmsg(-1));
         exit(EXIT_FAILURE);
@@ -157,7 +157,7 @@ void efb_get_elf_header(efb_context const * const efb_ctx, char * out_buffer)
 
     sprintf(&out_buffer[strlen(out_buffer)], "\n");
 
-    if ((elf_class = gelf_getclass(efb_ctx->sElf)) == ELFCLASSNONE)
+    if ((elf_class = gelf_getclass(sElf)) == ELFCLASSNONE)
     {
         printf("gelf_getclass() failed: %s.\n", elf_errmsg(-1));
         exit(EXIT_FAILURE);

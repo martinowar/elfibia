@@ -10,6 +10,19 @@
 #define DUMP_COL_WIDTH 4
 #define BUF_HEX_SIZE   (2 * DUMP_ROW_WIDTH + DUMP_COL_WIDTH + 1)
 
+static size_t get_secthdr_strtbl_idx(Elf *sElf)
+{
+    size_t sect_hdr_strtbl_idx;
+
+    if (elf_getshdrstrndx(sElf, &sect_hdr_strtbl_idx) != 0)
+    {
+        printf("elf_getshdrstrndx() failed: %s", elf_errmsg(-1));
+        exit(EXIT_FAILURE);
+    }
+
+    return sect_hdr_strtbl_idx;
+}
+
 static void get_secthdr_struct(GElf_Shdr *elfShdr, char * out_buffer)
 {
     sprintf(&out_buffer[strlen(out_buffer)],
@@ -166,7 +179,7 @@ char * get_dyn_symbol_val(Elf *sElf, GElf_Shdr *sect_header, GElf_Dyn * elf_dyn_
 #undef CS_DT_VAL_DEC
 }
 
-void info_sect_dynamic(Elf *sElf, Elf_Scn * sect, GElf_Shdr *sect_header, const bool dump_data, char * sect_name, char * out_buffer)
+void info_sect_dynamic(Elf *sElf, Elf_Scn * sect, GElf_Shdr *sect_header, const bool dump_data, char * out_buffer)
 {
     if (sect_header->sh_type == SHT_DYNAMIC)
     {
@@ -208,7 +221,7 @@ void info_sect_dynamic(Elf *sElf, Elf_Scn * sect, GElf_Shdr *sect_header, const 
     }
 }
 
-static void info_sect_strtab(Elf_Scn * elf_sect, GElf_Shdr *sect_header, const bool dump_data, char * sect_name, char * out_buffer)
+static void info_sect_strtab(Elf_Scn * elf_sect, GElf_Shdr *sect_header, const bool dump_data, char * out_buffer)
 {
     if (sect_header->sh_type == SHT_STRTAB)
     {
@@ -230,11 +243,11 @@ static void info_sect_strtab(Elf_Scn * elf_sect, GElf_Shdr *sect_header, const b
     }
 }
 
-static char * efb_get_sect_name(efb_context *efb_ctx, Elf64_Word sect_name_offset)
+static char * efb_get_sect_name(Elf *sElf, Elf64_Word sect_name_offset)
 {
     char *sect_name = NULL;
 
-    if ((sect_name = elf_strptr(efb_ctx->sElf, efb_ctx->sect_hdr_strtbl_idx, sect_name_offset)) == NULL)
+    if ((sect_name = elf_strptr(sElf, get_secthdr_strtbl_idx(sElf), sect_name_offset)) == NULL)
     {
         printf("elf_strptr() failed: %s\n", elf_errmsg(-1));
         exit(EXIT_FAILURE);
@@ -243,10 +256,10 @@ static char * efb_get_sect_name(efb_context *efb_ctx, Elf64_Word sect_name_offse
     return sect_name;
 }
 
-void efb_get_sect_names(efb_context *efb_ctx, char * sect_names[])
+void efb_get_sect_names(Elf *sElf, char * sect_names[])
 {
     Elf_Scn *sect = NULL;
-    while ((sect = elf_nextscn(efb_ctx->sElf, sect)) != NULL)
+    while ((sect = elf_nextscn(sElf, sect)) != NULL)
     {
         GElf_Shdr sect_header;
         if (gelf_getshdr(sect, &sect_header) != &sect_header)
@@ -255,14 +268,14 @@ void efb_get_sect_names(efb_context *efb_ctx, char * sect_names[])
             exit(EXIT_FAILURE);
         }
 
-        sect_names[elf_ndxscn(sect)] = efb_get_sect_name(efb_ctx, sect_header.sh_name);
+        sect_names[elf_ndxscn(sect)] = efb_get_sect_name(sElf, sect_header.sh_name);
     }
 }
 
-size_t efb_get_sect_count(efb_context *efb_ctx)
+size_t efb_get_sect_count(Elf *sElf)
 {
     size_t section_count;
-    if (elf_getshdrnum(efb_ctx->sElf, &section_count) != 0)
+    if (elf_getshdrnum(sElf, &section_count) != 0)
     {
         printf("elf_getshdrnum() failed: %s", elf_errmsg(-1));
         exit(EXIT_FAILURE);
@@ -271,12 +284,11 @@ size_t efb_get_sect_count(efb_context *efb_ctx)
     return section_count;
 }
 
-void efb_get_section_content(efb_context *efb_ctx, const int section_idx, char * out_buffer)
+void efb_get_section_content(Elf *sElf, const int section_idx, char * out_buffer)
 {
-    char * section_name = NULL;
     Elf_Scn *sect = NULL;
 
-    while ((sect = elf_nextscn(efb_ctx->sElf, sect)) != NULL)
+    while ((sect = elf_nextscn(sElf, sect)) != NULL)
     {
         GElf_Shdr sect_header;
         if (gelf_getshdr(sect, &sect_header) != &sect_header)
@@ -286,15 +298,14 @@ void efb_get_section_content(efb_context *efb_ctx, const int section_idx, char *
 
         if (elf_ndxscn(sect) == section_idx)
         {
-            section_name = "FIX_ME"; //efb_ctx->sect_names[section_idx];
-            sprintf(out_buffer, "Section %-4.4jd %s\n", (uintmax_t)elf_ndxscn(sect), section_name);
+            sprintf(out_buffer, "Section %jd\n", (uintmax_t)elf_ndxscn(sect));
             switch (sect_header.sh_type)
             {
             case SHT_DYNAMIC:
-                info_sect_dynamic(efb_ctx->sElf, sect, &sect_header, true, section_name, out_buffer);
+                info_sect_dynamic(sElf, sect, &sect_header, true, out_buffer);
                 break;
             case SHT_STRTAB:
-                info_sect_strtab(sect, &sect_header, true, section_name, out_buffer);
+                info_sect_strtab(sect, &sect_header, true, out_buffer);
                 break;
             default:
                 get_secthdr_struct(&sect_header, out_buffer);

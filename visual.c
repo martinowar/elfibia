@@ -112,11 +112,7 @@ static void redraw_content_view(efb_visual_context *visual_ctx)
 
     if (visual_ctx->wnd_content != NULL)
     {
-        static int counter = 0;
         wattrset(visual_ctx->wnd_content, COLOR_PAIR(1));
-// TODO remove this debug line
-        mvprintw(0, COLS - 40, "(%d) (menu count: %d)", counter++, visual_ctx->menu_items_count);
-
         wnoutrefresh(stdscr);
         pnoutrefresh(visual_ctx->wnd_content, visual_ctx->content_top_row, 0, CONTENT_FIRST_ROW, CONTENT_FIRST_COLUMN + 1, LINES - STATUS_LINE_HEIGHT - 2, COLS - 2);
         doupdate();
