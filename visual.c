@@ -8,14 +8,22 @@
 #define STATUS_LINE_HEIGHT 1
 
 #define MENU_WIDTH 45
+#define MENU_HEIGHT (LINES - STATUS_LINE_HEIGHT)
 #define MENU_FIRST_ROW 0
 #define MENU_FIRST_COLUMN 0
 
 #define FIRST_MENU_INDEX 0
 
-#define CONTENT_FIRST_ROW 1
-#define CONTENT_FIRST_COLUMN (MENU_WIDTH + 3)
-#define CONTENT_HEIGHT (LINES - 3)
+#define CONTENT_BOX_FIRST_ROW (MENU_FIRST_ROW)
+#define CONTENT_BOX_FIRST_COLUMN (MENU_WIDTH)
+#define CONTENT_BOX_WIDTH (COLS - CONTENT_BOX_FIRST_COLUMN)
+#define CONTENT_BOX_HEIGHT (LINES - CONTENT_BOX_FIRST_ROW - STATUS_LINE_HEIGHT)
+
+#define CONTENT_INDENT 1
+#define CONTENT_FIRST_COLUMN (CONTENT_BOX_FIRST_COLUMN + CONTENT_INDENT)
+#define CONTENT_FIRST_ROW (CONTENT_BOX_FIRST_ROW + CONTENT_INDENT)
+#define CONTENT_WIDTH (CONTENT_BOX_WIDTH - 2 * CONTENT_INDENT)
+#define CONTENT_HEIGHT (CONTENT_BOX_HEIGHT - 2 * CONTENT_INDENT)
 
 typedef struct
 {
@@ -72,7 +80,7 @@ static void create_menu(efb_visual_context *visual_ctx)
 {
     int idx;
 
-    visual_ctx->menu_items = (ITEM **)calloc(visual_ctx->menu_items_count, sizeof(ITEM *));
+    visual_ctx->menu_items = (ITEM **)calloc(visual_ctx->menu_items_count + 1, sizeof(ITEM *));
     for (idx = 0; idx < visual_ctx->menu_items_count; idx++)
     {
         char * str = "NULL";
@@ -84,14 +92,15 @@ static void create_menu(efb_visual_context *visual_ctx)
         visual_ctx->menu_items[idx] = new_item(str, str);
     }
 
-    visual_ctx->menu_items[idx] = new_item(NULL, NULL);
+    visual_ctx->menu_items[idx] = NULL;
+
     visual_ctx->main_menu = new_menu((ITEM **)visual_ctx->menu_items);
-    visual_ctx->wnd_menu = newwin(LINES - STATUS_LINE_HEIGHT, MENU_WIDTH, MENU_FIRST_ROW, MENU_FIRST_COLUMN);
+    visual_ctx->wnd_menu = newwin(MENU_HEIGHT, MENU_WIDTH, MENU_FIRST_ROW, MENU_FIRST_COLUMN);
     set_menu_win(visual_ctx->main_menu, visual_ctx->wnd_menu);
 
     // TODO Do not use magic numbers
-    set_menu_sub(visual_ctx->main_menu, derwin(visual_ctx->wnd_menu, LINES - STATUS_LINE_HEIGHT - 1, 38, MENU_FIRST_ROW + 1, MENU_FIRST_COLUMN + 1));
-    set_menu_format(visual_ctx->main_menu, LINES - STATUS_LINE_HEIGHT - 1, 1);
+    set_menu_sub(visual_ctx->main_menu, derwin(visual_ctx->wnd_menu, MENU_HEIGHT - 1, MENU_WIDTH - 2, MENU_FIRST_ROW + 1, MENU_FIRST_COLUMN + 1));
+    set_menu_format(visual_ctx->main_menu, MENU_HEIGHT - 2, 1);
     set_menu_mark(visual_ctx->main_menu, " > ");
     box(visual_ctx->wnd_menu, 0, 0);
     post_menu(visual_ctx->main_menu);
@@ -106,7 +115,7 @@ static void redraw_content_view(efb_visual_context *visual_ctx)
         delwin(visual_ctx->wnd_content_box);
     }
 
-    visual_ctx->wnd_content_box = newwin(LINES - STATUS_LINE_HEIGHT, COLS - MENU_WIDTH - 3, MENU_FIRST_ROW, CONTENT_FIRST_COLUMN);
+    visual_ctx->wnd_content_box = newwin(CONTENT_BOX_HEIGHT, CONTENT_BOX_WIDTH, CONTENT_BOX_FIRST_ROW, CONTENT_BOX_FIRST_COLUMN);
     box(visual_ctx->wnd_content_box, 0, 0);
     wrefresh(visual_ctx->wnd_content_box);
 
@@ -114,7 +123,7 @@ static void redraw_content_view(efb_visual_context *visual_ctx)
     {
         wattrset(visual_ctx->wnd_content, COLOR_PAIR(1));
         wnoutrefresh(stdscr);
-        pnoutrefresh(visual_ctx->wnd_content, visual_ctx->content_top_row, 0, CONTENT_FIRST_ROW, CONTENT_FIRST_COLUMN + 1, LINES - STATUS_LINE_HEIGHT - 2, COLS - 2);
+        pnoutrefresh(visual_ctx->wnd_content, visual_ctx->content_top_row, 0, CONTENT_FIRST_ROW, CONTENT_FIRST_COLUMN, CONTENT_FIRST_ROW + CONTENT_HEIGHT - 1, CONTENT_FIRST_COLUMN + CONTENT_WIDTH - 1);
         doupdate();
     }
 }
