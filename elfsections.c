@@ -243,38 +243,32 @@ static char * efb_get_sect_name(efb_context *efb_ctx, Elf64_Word sect_name_offse
     return sect_name;
 }
 
-void efb_get_sect_names(efb_context *efb_ctx)
+void efb_get_sect_names(efb_context *efb_ctx, char * sect_names[])
 {
-    if (efb_ctx->sect_names == NULL)
+    Elf_Scn *sect = NULL;
+    while ((sect = elf_nextscn(efb_ctx->sElf, sect)) != NULL)
     {
-        efb_ctx->sect_names = malloc(efb_ctx->sect_count * sizeof(char *));
-
-        Elf_Scn *sect = NULL;
-        while ((sect = elf_nextscn(efb_ctx->sElf, sect)) != NULL)
+        GElf_Shdr sect_header;
+        if (gelf_getshdr(sect, &sect_header) != &sect_header)
         {
-            GElf_Shdr sect_header;
-            if (gelf_getshdr(sect, &sect_header) != &sect_header)
-            {
-                printf("getshdr() failed: %s\n", elf_errmsg(-1));
-                exit(EXIT_FAILURE);
-            }
-
-            efb_ctx->sect_names[elf_ndxscn(sect)] = efb_get_sect_name(efb_ctx, sect_header.sh_name);
+            printf("getshdr() failed: %s\n", elf_errmsg(-1));
+            exit(EXIT_FAILURE);
         }
-    }
-    else
-    {
-        printf("efb_get_sect_names: already initialized\n");
+
+        sect_names[elf_ndxscn(sect)] = efb_get_sect_name(efb_ctx, sect_header.sh_name);
     }
 }
 
-void efb_get_sect_count(efb_context *efb_ctx)
+size_t efb_get_sect_count(efb_context *efb_ctx)
 {
-   if (elf_getshdrnum(efb_ctx->sElf, &efb_ctx->sect_count) != 0)
-   {
+    size_t section_count;
+    if (elf_getshdrnum(efb_ctx->sElf, &section_count) != 0)
+    {
         printf("elf_getshdrnum() failed: %s", elf_errmsg(-1));
         exit(EXIT_FAILURE);
-   }
+    }
+
+    return section_count;
 }
 
 void efb_get_section_content(efb_context *efb_ctx, const int section_idx, char * out_buffer)
@@ -292,7 +286,7 @@ void efb_get_section_content(efb_context *efb_ctx, const int section_idx, char *
 
         if (elf_ndxscn(sect) == section_idx)
         {
-            section_name = efb_ctx->sect_names[section_idx];
+            section_name = "FIX_ME"; //efb_ctx->sect_names[section_idx];
             sprintf(out_buffer, "Section %-4.4jd %s\n", (uintmax_t)elf_ndxscn(sect), section_name);
             switch (sect_header.sh_type)
             {

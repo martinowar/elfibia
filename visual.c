@@ -38,7 +38,6 @@ static void init_view(efb_visual_context *visual_ctx, char **menu_strings, const
     cbreak();
     noecho();
     keypad(stdscr, TRUE);
-//    mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, NULL);
 
     start_color();
     init_pair(1, COLOR_YELLOW, COLOR_MAGENTA);
@@ -54,12 +53,13 @@ static void destroy_menu(efb_visual_context *visual_ctx)
 {
     if (visual_ctx->wnd_menu != NULL)
     {
-        unpost_menu(visual_ctx->main_menu);
-        free_menu(visual_ctx->main_menu);
-        for (int idx = 0; idx < visual_ctx->menu_items_count; ++idx)
+        for (int idx = 0; idx < visual_ctx->menu_items_count; idx++)
         {
             free_item(visual_ctx->menu_items[idx]);
         }
+
+        unpost_menu(visual_ctx->main_menu);
+        free_menu(visual_ctx->main_menu);
 
         delwin(visual_ctx->wnd_menu);
         free(visual_ctx->menu_items);
@@ -73,7 +73,7 @@ static void create_menu(efb_visual_context *visual_ctx)
     int idx;
 
     visual_ctx->menu_items = (ITEM **)calloc(visual_ctx->menu_items_count, sizeof(ITEM *));
-    for (idx = 0; idx < visual_ctx->menu_items_count; ++idx)
+    for (idx = 0; idx < visual_ctx->menu_items_count; idx++)
     {
         char * str = "NULL";
         if (visual_ctx->menu_strings[idx] != NULL)
@@ -115,7 +115,7 @@ static void redraw_content_view(efb_visual_context *visual_ctx)
         static int counter = 0;
         wattrset(visual_ctx->wnd_content, COLOR_PAIR(1));
 // TODO remove this debug line
-        mvprintw(0, COLS - 40, "(%d) key: %d line %d/%d", counter++, 1, visual_ctx->content_top_row, visual_ctx->content_row_count);
+        mvprintw(0, COLS - 40, "(%d) (menu count: %d)", counter++, visual_ctx->menu_items_count);
 
         wnoutrefresh(stdscr);
         pnoutrefresh(visual_ctx->wnd_content, visual_ctx->content_top_row, 0, CONTENT_FIRST_ROW, CONTENT_FIRST_COLUMN + 1, LINES - STATUS_LINE_HEIGHT - 2, COLS - 2);
@@ -186,7 +186,7 @@ static void redraw_view(efb_visual_context *visual_ctx)
 
     clear();
     attron(COLOR_PAIR(2));
-    mvprintw(LINES - 1, 0, "Navigation: Menu: UP / DOWN / PgUp / PgDown / Home / End; Content: j: UP, k: DOWN; Exit: q");
+    mvprintw(LINES - 1, 0, "Menu: KeyUp / KeyDown / PgUp / PgDown / Home / End; Content: k (UP) / j (DOWN); Exit: q");
     attroff(COLOR_PAIR(2));
 
     refresh();
@@ -215,14 +215,14 @@ void efb_draw_view(char **menu_strings, const int menu_items_count)
     {
         switch(ch_key)
         {
-            case 'j': // scroll the menu item content
+            case 'k': // scroll the menu item content
                 if (efb_visual_ctx.content_top_row > 0)
                 {
                     efb_visual_ctx.content_top_row--;
                 }
                 redraw_content_view(&efb_visual_ctx);
                 break;
-            case 'k': // scroll the menu item content
+            case 'j': // scroll the menu item content
                 if (efb_visual_ctx.content_top_row < (efb_visual_ctx.content_row_count - LINES + STATUS_LINE_HEIGHT + 1))
                 {
                     efb_visual_ctx.content_top_row++;
@@ -256,7 +256,7 @@ void efb_draw_view(char **menu_strings, const int menu_items_count)
         refresh();
 	}
 
-	destroy_menu(&efb_visual_ctx);
+    destroy_menu(&efb_visual_ctx);
 
 	if (efb_visual_ctx.wnd_content != NULL)
     {
