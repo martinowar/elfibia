@@ -7,7 +7,7 @@ LIBS=-lncurses -lmenu -lelf
 _DEPS = elfibia.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = elfibia.o elfheader.o elfsections.o elfsegments.o visual.o
+_OBJ = elfibia.o elfheader.o elfsections.o elfsegments.o draw-ncurses.o
 OBJ = $(patsubst %,$(OBJ_DIR)/%,$(_OBJ))
 
 $(OBJ_DIR)/%.o: %.c $(DEPS) | $(OBJ_DIR)

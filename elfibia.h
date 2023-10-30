@@ -4,10 +4,16 @@
 #include <stdio.h>
 #include <gelf.h>
 
-void efb_get_sect_names(Elf *sElf, char * sect_names[]);
+typedef struct
+{
+    char * item_name;
+    char * item_descr;
+} item_data;
+
+void efb_get_sect_name_and_type(Elf *sElf, item_data * it_data);
 size_t efb_get_sect_count(Elf *sElf);
 
-void efb_draw_view(char **menu_strings, const int menu_items_count);
+void efb_draw_view(item_data *it_data, const int menu_items_count);
 
 char * efb_get_menu_item_content(const int menu_item_idx);
 

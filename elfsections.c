@@ -35,7 +35,7 @@ static void get_secthdr_struct(GElf_Shdr *elfShdr, char * out_buffer)
         "sh_name      = %d\n"
         "sh_offset    = %ld\n"
         "sh_size      = %ld\n"
-        "sh_type      = %d\n\n",
+        "sh_type      = 0x%x\n\n",
         elfShdr->sh_addr, elfShdr->sh_addralign, elfShdr->sh_entsize,
         elfShdr->sh_flags, elfShdr->sh_info, elfShdr->sh_link,
         elfShdr->sh_name, elfShdr->sh_offset, elfShdr->sh_size, elfShdr->sh_type);
@@ -118,11 +118,56 @@ static void dump_sect_strings(Elf_Data *elf_data, GElf_Addr sect_addr, char * ou
     }
 }
 
-char * get_dynamic_type(const long int dynType)
+static char * efb_get_section_type(const long int sect_type)
+{
+    switch (sect_type)
+    {
+        case SHT_NULL:
+            return "NULL";
+        case SHT_PROGBITS:
+            return "PROGBITS";
+        case SHT_SYMTAB:
+            return "SYMTAB";
+        case SHT_STRTAB:
+            return "STRTAB";
+        case SHT_RELA:
+            return "RELA";
+        case SHT_HASH:
+            return "HASH";
+        case SHT_DYNAMIC:
+            return "DYNAMIC";
+        case SHT_NOTE:
+            return "NOTE";
+        case SHT_NOBITS:
+            return "NOBITS";
+        case SHT_REL:
+            return "REL";
+        case SHT_SHLIB:
+            return "SHLIB";
+        case SHT_DYNSYM:
+            return "DYNSYM";
+        case SHT_INIT_ARRAY:
+            return "INIT_ARRAY";
+        case SHT_FINI_ARRAY:
+            return "FINI_ARRAY";
+        case SHT_PREINIT_ARRAY:
+            return "PREINIT_ARRAY";
+        case SHT_GROUP:
+            return "GROUP";
+        case SHT_SYMTAB_SHNDX:
+            return "SYMTAB_SHNDX";
+        case SHT_RELR:
+            return "RELR";
+        default:
+            return "<unknown>";
+    }
+}
+
+char * get_dynamic_type(const long int dyn_type)
 {
 #define CS_DT(TYPE) case DT_##TYPE: return #TYPE
 
-    switch (dynType)
+    switch (dyn_type)
     {
         CS_DT(NULL);            CS_DT(NEEDED);          CS_DT(PLTRELSZ);
         CS_DT(PLTGOT);          CS_DT(HASH);            CS_DT(STRTAB);
@@ -256,7 +301,7 @@ static char * efb_get_sect_name(Elf *sElf, Elf64_Word sect_name_offset)
     return sect_name;
 }
 
-void efb_get_sect_names(Elf *sElf, char * sect_names[])
+void efb_get_sect_name_and_type(Elf *sElf, item_data * it_data)
 {
     Elf_Scn *sect = NULL;
     while ((sect = elf_nextscn(sElf, sect)) != NULL)
@@ -268,7 +313,8 @@ void efb_get_sect_names(Elf *sElf, char * sect_names[])
             exit(EXIT_FAILURE);
         }
 
-        sect_names[elf_ndxscn(sect)] = efb_get_sect_name(sElf, sect_header.sh_name);
+        it_data[elf_ndxscn(sect)].item_name = efb_get_sect_name(sElf, sect_header.sh_name);
+        it_data[elf_ndxscn(sect)].item_descr = efb_get_section_type(sect_header.sh_type);
     }
 }
 
