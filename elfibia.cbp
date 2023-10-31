@@ -25,6 +25,9 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="draw-ncurses.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="elfheader.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -36,9 +39,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="elfsegments.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="visual.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Extensions />

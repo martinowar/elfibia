@@ -48,7 +48,7 @@ static void init_view(efb_draw_context *draw_ctx, item_data *it_data, const int 
     keypad(stdscr, TRUE);
 
     start_color();
-    init_pair(1, COLOR_YELLOW, COLOR_MAGENTA);
+    init_pair(1, COLOR_WHITE, COLOR_GREEN);
     init_pair(2, COLOR_WHITE, COLOR_RED);
 
     draw_ctx->wnd_menu = NULL;
@@ -167,7 +167,7 @@ static void display_menu_item_content(efb_draw_context *draw_ctx, const int item
 
     draw_ctx->wnd_content = newpad(draw_ctx->content_row_count, COLS - MENU_WIDTH);
     wattrset(draw_ctx->wnd_content, COLOR_PAIR(1));
-    wbkgd(draw_ctx->wnd_content, (chtype) (' ' | COLOR_PAIR(2)));
+    wbkgd(draw_ctx->wnd_content, (chtype) (' ' | COLOR_PAIR(1)));
 
     int row_idx = 0;
     while (*ptr_content != '\0')

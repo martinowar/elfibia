@@ -165,46 +165,161 @@ static char * efb_get_section_type(const long int sect_type)
 
 char * get_dynamic_type(const long int dyn_type)
 {
-#define CS_DT(TYPE) case DT_##TYPE: return #TYPE
-
     switch (dyn_type)
     {
-        CS_DT(NULL);            CS_DT(NEEDED);          CS_DT(PLTRELSZ);
-        CS_DT(PLTGOT);          CS_DT(HASH);            CS_DT(STRTAB);
-        CS_DT(SYMTAB);          CS_DT(RELA);            CS_DT(RELASZ);
-        CS_DT(RELAENT);         CS_DT(STRSZ);           CS_DT(SYMENT);
-        CS_DT(INIT);            CS_DT(FINI);            CS_DT(SONAME);
-        CS_DT(RPATH);           CS_DT(SYMBOLIC);        CS_DT(REL);
-        CS_DT(RELSZ);           CS_DT(RELENT);          CS_DT(PLTREL);
-        CS_DT(DEBUG);           CS_DT(TEXTREL);         CS_DT(JMPREL);
-        CS_DT(BIND_NOW);        CS_DT(INIT_ARRAY);      CS_DT(FINI_ARRAY);
-        CS_DT(INIT_ARRAYSZ);    CS_DT(FINI_ARRAYSZ);    CS_DT(RUNPATH);
-        CS_DT(FLAGS);           CS_DT(PREINIT_ARRAY);   CS_DT(PREINIT_ARRAYSZ);
-        CS_DT(SYMTAB_SHNDX);    CS_DT(NUM);             CS_DT(GNU_HASH);
-        CS_DT(VERNEEDNUM);      CS_DT(VERNEED);         CS_DT(VERSYM);
+        case DT_NULL:
+            return "NULL";
+        case DT_NEEDED:
+            return "NEEDED";
+        case DT_PLTRELSZ:
+            return "PLTRELSZ";
+        case DT_PLTGOT:
+            return "PLTGOT";
+        case DT_HASH:
+            return "HASH";
+        case DT_STRTAB:
+            return "STRTAB";
+        case DT_SYMTAB:
+            return "SYMTAB";
+        case DT_RELA:
+            return "RELA";
+        case DT_RELASZ:
+            return "RELASZ";
+        case DT_RELAENT:
+            return "RELAENT";
+        case DT_STRSZ:
+            return "STRSZ";
+        case DT_SYMENT:
+            return "SYMENT";
+        case DT_INIT:
+            return "INIT";
+        case DT_FINI:
+            return "FINI";
+        case DT_SONAME:
+            return "SONAME";
+        case DT_RPATH:
+            return "RPATH";
+        case DT_SYMBOLIC:
+            return "SYMBOLIC";
+        case DT_REL:
+            return "REL";
+        case DT_RELSZ:
+            return "RELSZ";
+        case DT_RELENT:
+            return "RELENT";
+        case DT_PLTREL:
+            return "PLTREL";
+        case DT_DEBUG:
+            return "DEBUG";
+        case DT_TEXTREL:
+            return "TEXTREL";
+        case DT_JMPREL:
+            return "JMPREL";
+        case DT_BIND_NOW:
+            return "BIND_NOW";
+        case DT_INIT_ARRAY:
+            return "INIT_ARRAY";
+        case DT_FINI_ARRAY:
+            return "FINI_ARRAY";
+        case DT_INIT_ARRAYSZ:
+            return "INIT_ARRAYSZ";
+        case DT_FINI_ARRAYSZ:
+            return "FINI_ARRAYSZ";
+        case DT_RUNPATH:
+            return "RUNPATH";
+        case DT_FLAGS:
+            return "FLAGS";
+        case DT_PREINIT_ARRAY:
+            return "PREINIT_ARRAY";
+        case DT_PREINIT_ARRAYSZ:
+            return "PREINIT_ARRAYSZ";
+        case DT_SYMTAB_SHNDX:
+            return "SYMTAB_SHNDX";
+        case DT_NUM:
+            return "NUM";
+        case DT_GNU_HASH:
+            return "GNU_HASH";
+        case DT_VERNEEDNUM:
+            return "VERNEEDNUM";
+        case DT_VERNEED:
+            return "VERNEED";
+        case DT_VERSYM:
+            return "VERSYM";
         default:
-            return "unknown";
+            return "<unknown>";
     }
-
-#undef CS_DT
 }
 
 char * get_dyn_symbol_val(Elf *sElf, GElf_Shdr *sect_header, GElf_Dyn * elf_dyn_symbol, char * sym_val)
 {
-#define CS_DT_VAL_HEX(TAG) case DT_##TAG: sprintf(sym_val, "0x%lx", elf_dyn_symbol->d_un.d_val); break
-#define CS_DT_VAL_BYTES(TAG) case DT_##TAG: sprintf(sym_val, "%ld (bytes)", elf_dyn_symbol->d_un.d_val); break
-#define CS_DT_VAL_DEC(TAG) case DT_##TAG: sprintf(sym_val, "%ld", elf_dyn_symbol->d_un.d_val); break
-
     switch (elf_dyn_symbol->d_tag)
     {
-        CS_DT_VAL_HEX(INIT);            CS_DT_VAL_HEX(FINI);            CS_DT_VAL_HEX(INIT_ARRAY);
-        CS_DT_VAL_BYTES(INIT_ARRAYSZ);  CS_DT_VAL_HEX(FINI_ARRAY);      CS_DT_VAL_BYTES(FINI_ARRAYSZ);
-        CS_DT_VAL_HEX(GNU_HASH);        CS_DT_VAL_HEX(STRTAB);          CS_DT_VAL_HEX(SYMTAB);
-        CS_DT_VAL_BYTES(STRSZ);         CS_DT_VAL_BYTES(SYMENT);        CS_DT_VAL_HEX(DEBUG);
-        CS_DT_VAL_HEX(PLTGOT);          CS_DT_VAL_BYTES(PLTRELSZ);      CS_DT_VAL_HEX(JMPREL);
-        CS_DT_VAL_HEX(RELA);            CS_DT_VAL_BYTES(RELASZ);        CS_DT_VAL_BYTES(RELAENT);
-        CS_DT_VAL_HEX(VERNEED);         CS_DT_VAL_DEC(VERNEEDNUM);      CS_DT_VAL_HEX(VERSYM);
-
+        case DT_INIT:
+            sprintf(sym_val, "0x%lx", elf_dyn_symbol->d_un.d_val);
+            break;
+        case DT_FINI:
+            sprintf(sym_val, "0x%lx", elf_dyn_symbol->d_un.d_val);
+            break;
+        case DT_INIT_ARRAY:
+            sprintf(sym_val, "0x%lx", elf_dyn_symbol->d_un.d_val);
+            break;
+        case DT_INIT_ARRAYSZ:
+            sprintf(sym_val, "%ld (bytes)", elf_dyn_symbol->d_un.d_val);
+            break;
+        case DT_FINI_ARRAY:
+            sprintf(sym_val, "0x%lx", elf_dyn_symbol->d_un.d_val);
+            break;
+        case DT_FINI_ARRAYSZ:
+            sprintf(sym_val, "%ld (bytes)", elf_dyn_symbol->d_un.d_val);
+            break;
+        case DT_GNU_HASH:
+            sprintf(sym_val, "0x%lx", elf_dyn_symbol->d_un.d_val);
+            break;
+        case DT_PLTREL:
+            sprintf(sym_val, "%s", get_dynamic_type(elf_dyn_symbol->d_un.d_val));
+            break;
+        case DT_STRTAB:
+            sprintf(sym_val, "0x%lx", elf_dyn_symbol->d_un.d_val);
+            break;
+        case DT_SYMTAB:
+            sprintf(sym_val, "0x%lx", elf_dyn_symbol->d_un.d_val);
+            break;
+        case DT_STRSZ:
+            sprintf(sym_val, "%ld (bytes)", elf_dyn_symbol->d_un.d_val);
+            break;
+        case DT_SYMENT:
+            sprintf(sym_val, "%ld (bytes)", elf_dyn_symbol->d_un.d_val);
+            break;
+        case DT_DEBUG:
+            sprintf(sym_val, "0x%lx", elf_dyn_symbol->d_un.d_val);
+            break;
+        case DT_PLTGOT:
+            sprintf(sym_val, "0x%lx", elf_dyn_symbol->d_un.d_val);
+            break;
+        case DT_PLTRELSZ:
+            sprintf(sym_val, "%ld (bytes)", elf_dyn_symbol->d_un.d_val);
+            break;
+        case DT_JMPREL:
+            sprintf(sym_val, "0x%lx", elf_dyn_symbol->d_un.d_val);
+            break;
+        case DT_RELA:
+            sprintf(sym_val, "0x%lx", elf_dyn_symbol->d_un.d_val);
+            break;
+        case DT_RELASZ:
+            sprintf(sym_val, "%ld (bytes)", elf_dyn_symbol->d_un.d_val);
+            break;
+        case DT_RELAENT:
+            sprintf(sym_val, "%ld (bytes)", elf_dyn_symbol->d_un.d_val);
+            break;
+        case DT_VERNEED:
+            sprintf(sym_val, "0x%lx", elf_dyn_symbol->d_un.d_val);
+            break;
+        case DT_VERNEEDNUM:
+            sprintf(sym_val, "%ld", elf_dyn_symbol->d_un.d_val);
+            break;
+        case DT_VERSYM:
+            sprintf(sym_val, "0x%lx", elf_dyn_symbol->d_un.d_val);
+            break;
         case DT_NEEDED:
             char *sym_name;
             if ((sym_name = elf_strptr(sElf, sect_header->sh_link, elf_dyn_symbol->d_un.d_val)) == NULL)
@@ -214,14 +329,13 @@ char * get_dyn_symbol_val(Elf *sElf, GElf_Shdr *sect_header, GElf_Dyn * elf_dyn_
 
             sprintf(sym_val, "Shared library: [%s]", sym_name);
             break;
+        default:
+            // Empty
+            break;
 
     }
 
     return sym_val;
-
-#undef CS_DT_VAL_HEX
-#undef CS_DT_VAL_BYTES
-#undef CS_DT_VAL_DEC
 }
 
 void info_sect_dynamic(Elf *sElf, Elf_Scn * sect, GElf_Shdr *sect_header, const bool dump_data, char * out_buffer)
@@ -247,7 +361,9 @@ void info_sect_dynamic(Elf *sElf, Elf_Scn * sect, GElf_Shdr *sect_header, const 
 
             if (elf_dyn_symbol.d_tag != DT_NULL)
             {
-                char sym_val[100] = {"***fixme***"};
+                // TODO check if the size is enough
+                // Add a guard condition
+                char sym_val[100] = { "<unknown>" };
                 sprintf(&out_buffer[strlen(out_buffer)], " 0x%016lx %-18s %s\n",
                         elf_dyn_symbol.d_tag,
                         get_dynamic_type(elf_dyn_symbol.d_tag),
@@ -368,5 +484,10 @@ void efb_get_section_content(Elf *sElf, const int section_idx, char * out_buffer
                 break;
             }
         }
+    }
+
+    if (strlen(out_buffer) == 0)
+    {
+        sprintf(out_buffer, "Section %jd\n(empty)", (uintmax_t)elf_ndxscn(sect));
     }
 }
