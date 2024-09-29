@@ -6,9 +6,16 @@ libelf
 ncurses-devel
 ```
 
-<b>How to build:</b>
+<b>How to build (example for the `release` preset):</b>
 ```
-make
+cmake --preset release
+cmake --build --preset release
+```
+
+Note: the following commands print the available presets:
+```
+cmake --list-presets
+cmake --build --list-presets
 ```
 
 <b>Usage:</b>
