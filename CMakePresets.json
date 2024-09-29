@@ -1,0 +1,105 @@
+{
+    "version": 6,
+    "configurePresets": [
+        {
+            "name": "common-preset",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "build/${presetName}"
+        },
+        {
+            "name": "debug",
+            "displayName": "Debug",
+            "inherits": "common-preset",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "release",
+            "displayName": "Release",
+            "inherits": "common-preset",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "debug-gcc",
+            "displayName": "Debug",
+            "inherits": "debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_C_COMPILER": "gcc",
+                "CMAKE_CXX_COMPILER": "g++"
+            }
+        },
+        {
+            "name": "release-gcc",
+            "displayName": "Release",
+            "inherits": "release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_C_COMPILER": "gcc",
+                "CMAKE_CXX_COMPILER": "g++"
+            }
+        },
+        {
+            "name": "debug-clang",
+            "displayName": "Debug",
+            "inherits": "debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_C_COMPILER": "clang-cl",
+                "CMAKE_CXX_COMPILER": "clang-cl"
+            }
+        },
+        {
+            "name": "release-clang",
+            "displayName": "Release",
+            "inherits": "release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_C_COMPILER": "clang-cl",
+                "CMAKE_CXX_COMPILER": "clang-cl"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "debug",
+            "displayName": "App Debug Build",
+            "configurePreset": "debug",
+            "configuration": "Debug"
+        },
+        {
+            "name": "release",
+            "displayName": "App Release Build",
+            "configurePreset": "release",
+            "configuration": "Release"
+        },
+        {
+            "name": "debug-gcc",
+            "displayName": "App Debug Build",
+            "configurePreset": "debug-gcc",
+            "configuration": "Debug"
+        },
+        {
+            "name": "release-gcc",
+            "displayName": "App Release Build",
+            "configurePreset": "release-gcc",
+            "configuration": "Release"
+        },
+        {
+            "name": "debug-clang",
+            "displayName": "App Debug Build",
+            "configurePreset": "debug-clang",
+            "configuration": "Debug"
+        },
+        {
+            "name": "release-clang",
+            "displayName": "App Release Build",
+            "configurePreset": "release-clang",
+            "configuration": "Release"
+        }
+    ]
+}
